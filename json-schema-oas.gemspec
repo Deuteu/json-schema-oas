@@ -1,6 +1,6 @@
 lib = File.expand_path('lib', __dir__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'json-schema-oas/version'
+require 'json-schema-oas/schema/version'
 
 Gem::Specification.new do |spec|
   spec.name          = 'json-schema-oas'
