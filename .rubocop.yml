@@ -1,0 +1,16 @@
+Metrics/BlockLength:
+  Exclude:
+   - spec/**/*_spec.rb
+Metrics/LineLength:
+  Max: 130
+Metrics/MethodLength:
+  Max: 30
+Layout/DotPosition:
+  EnforcedStyle: trailing
+Layout/SpaceInsideHashLiteralBraces:
+  EnforcedStyle: no_space
+Lint/Void:
+  Enabled: false
+Naming/FileName:
+  Exclude:
+    - lib/json-schema-oas.rb
