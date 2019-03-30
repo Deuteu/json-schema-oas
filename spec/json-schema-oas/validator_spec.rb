@@ -11,6 +11,8 @@ RSpec.describe JSON::Oas::Validator do
   invalid_oas2_schema = YAML.safe_load(File.read(File.expand_path('../../data/schema/invalid/petstore.oas2.yml', __dir__)))
   invalid_oas3_schema = YAML.safe_load(File.read(File.expand_path('../../data/schema/invalid/petstore.oas3.yml', __dir__)))
 
+  data_examples_folder = File.expand_path('../../data/example', __dir__)
+
   describe '.valid_schema?' do
     context 'with an unknown version' do
       it 'raises an Error' do
@@ -157,6 +159,96 @@ RSpec.describe JSON::Oas::Validator do
         expect(original_schema.object_id).not_to eq(schema.object_id)
         expect(original_schema.schema).to eq(schema.schema)
       end
+    end
+  end
+
+  describe '.fully_validate' do
+    shared_examples :schema_and_path_validation do
+      context 'with a schema fragment' do
+        let(:options) { {with_schema: 'Pet', oas_version: version} }
+
+        context 'with a valid data' do
+          it 'returns no errors' do
+            data = YAML.safe_load(File.read("#{data_examples_folder}/pet.json"))
+
+            errors = Validator.fully_validate(schema, data, options)
+
+            expect(errors).to be_empty
+          end
+        end
+
+        context 'with invalid data' do
+          it 'returns errors' do
+            data = YAML.safe_load(File.read("#{data_examples_folder}/invalid/pet.json"))
+
+            errors = Validator.fully_validate(schema, data, options)
+
+            expect(errors).not_to be_empty
+          end
+        end
+      end
+
+      context 'with a response path fragment' do
+        let(:options) { {with_response: ['/pets/{petId}', :get, 200], oas_version: version} }
+
+        context 'with a valid data' do
+          it 'returns no errors' do
+            data = YAML.safe_load(File.read("#{data_examples_folder}/pet.json"))
+
+            errors = Validator.fully_validate(schema, data, options)
+
+            expect(errors).to be_empty
+          end
+        end
+
+        context 'with invalid data' do
+          it 'returns errors' do
+            data = YAML.safe_load(File.read("#{data_examples_folder}/invalid/pet.json"))
+
+            errors = Validator.fully_validate(schema, data, options)
+
+            expect(errors).not_to be_empty
+          end
+        end
+      end
+    end
+
+    context 'with an OAS 3.0 version' do
+      let(:schema) { example_oas3_schema }
+      let(:version) { JSON::Oas::Version::OAS3 }
+
+      include_examples :schema_and_path_validation
+
+      context 'with a response fragment' do
+        let(:options) { {with_response: 'Error', oas_version: version} }
+
+        context 'with a valid data' do
+          it 'returns no errors' do
+            data = YAML.safe_load(File.read("#{data_examples_folder}/error.json"))
+
+            errors = Validator.fully_validate(schema, data, options)
+
+            expect(errors).to be_empty
+          end
+        end
+
+        context 'with invalid data' do
+          it 'returns errors' do
+            data = YAML.safe_load(File.read("#{data_examples_folder}/invalid/error.json"))
+
+            errors = Validator.fully_validate(schema, data, options)
+
+            expect(errors).not_to be_empty
+          end
+        end
+      end
+    end
+
+    context 'with an OAS 2.0 version' do
+      let(:schema) { example_oas2_schema }
+      let(:version) { JSON::Oas::Version::OAS2 }
+
+      include_examples :schema_and_path_validation
     end
   end
 end
